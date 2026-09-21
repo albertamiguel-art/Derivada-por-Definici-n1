@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reto: Derivada por Definición</title>
+<meta name="description" content="Juego de arrastrar y soltar para practicar la derivada por definición, con explicaciones paso a paso.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+window.MathJax = {
+  tex: {inlineMath: [['\\(','\\)'], ['$', '$']], displayMath: [['\\[','\\]']]},
+  svg: {fontCache: 'global'}
+};
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-svg.js"></script>
+<style>
+:root{
+  --paper:#fbf8ef;
+  --paper-2:#ffffff;
+  --ink:#1d2b53;
+  --ink-soft:#5a6489;
+  --accent:#2f5fb0;
+  --accent-2:#e69500;
+  --accent-2-bg:#fff2d9;
+  --good:#2f8f5f;
+  --good-bg:#e6f7ec;
+  --bad:#c9424a;
+  --bad-bg:#fdeaea;
+  --grid-line: rgba(29,43,83,.07);
+  --margin:#d9646f;
+  --border:#e4ddc9;
+  --shadow: 0 10px 26px rgba(29,43,83,.10);
+  --font-hand:'Kalam',"Comic Sans MS",cursive;
+  --font-body:'Inter',system-ui,-apple-system,"Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --paper:#161a2c;
+    --paper-2:#1e2340;
+    --ink:#eef1fb;
+    --ink-soft:#aab1d9;
+    --accent:#7ea6ff;
+    --accent-2:#ffc258;
+    --accent-2-bg:#3a2c10;
+    --good:#7fdba3;
+    --good-bg:#173226;
+    --bad:#ff9a9a;
+    --bad-bg:#3a1c1f;
+    --grid-line: rgba(238,241,251,.07);
+    --margin:#ff8d95;
+    --border:#323a5c;
+    --shadow: 0 10px 26px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  --paper:#161a2c;
+  --paper-2:#1e2340;
+  --ink:#eef1fb;
+  --ink-soft:#aab1d9;
+  --accent:#7ea6ff;
+  --accent-2:#ffc258;
+  --accent-2-bg:#3a2c10;
+  --good:#7fdba3;
+  --good-bg:#173226;
+  --bad:#ff9a9a;
+  --bad-bg:#3a1c1f;
+  --grid-line: rgba(238,241,251,.07);
+  --margin:#ff8d95;
+  --border:#323a5c;
+  --shadow: 0 10px 26px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{
+  margin:0;
+  font-family:var(--font-body);
+  color:var(--ink);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size:26px 26px;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+}
+button{font-family:inherit}
+h1,h2,h3{font-family:var(--font-hand)}
+@media (prefers-reduced-motion: reduce){
+  *{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
+
+.topbar{
+  background:var(--paper-2);
+  border-bottom:3px solid var(--ink);
+  position:sticky;top:env(safe-area-inset-top,0px);z-index:20;
+}
+.topbar-inner{
+  max-width:1180px;margin:auto;padding:12px 18px;
+  display:flex;align-items:center;gap:14px;justify-content:space-between;flex-wrap:wrap;
+}
+.brand{display:flex;align-items:center;gap:12px}
+.mascot{
+  width:50px;height:50px;border-radius:50%;
+  background:var(--accent);color:white;display:grid;place-items:center;
+  font-size:24px;box-shadow:var(--shadow);transition:transform .2s;
+}
+.mascot.bump{transform:scale(1.18) rotate(-6deg)}
+.title h1{font-size:22px;margin:0;color:var(--ink);font-weight:700}
+.title p{margin:2px 0 0;color:var(--ink-soft);font-size:12.5px;font-family:var(--font-body)}
+.stats{display:flex;gap:8px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.stat{
+  background:var(--paper);border:1px solid var(--border);border-radius:12px;
+  padding:6px 12px;text-align:center;min-width:70px
+}
+.stat b{display:block;color:var(--accent);font-size:17px;font-family:var(--font-body)}
+.stat span{font-size:9.5px;color:var(--ink-soft);letter-spacing:.03em}
+.stat.streak b{color:var(--accent-2)}
+.iconbtn{
+  border:1px solid var(--border);background:var(--paper);border-radius:12px;
+  width:38px;height:38px;cursor:pointer;font-size:17px;color:var(--ink);
+  display:grid;place-items:center;
+}
+.iconbtn:hover{border-color:var(--accent)}
+.iconbtn:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+main{max-width:1180px;margin:auto;padding:22px 16px 46px}
+.card{
+  background:var(--paper-2);border:1px solid var(--border);border-radius:18px;
+  box-shadow:var(--shadow);padding:24px;
+}
+
+/* --- start screen --- */
+.start-screen{text-align:center;padding:36px 24px}
+.start-screen .kicker{font-family:var(--font-hand);color:var(--accent-2);font-size:16px;margin:0 0 4px}
+.start-screen h2{color:var(--ink);font-size:32px;margin:4px 0}
+.start-screen .formula{
+  display:inline-block;background:var(--accent-2-bg);border:2px dashed var(--accent-2);
+  padding:14px 22px;border-radius:14px;margin:14px 0 18px;font-size:22px;color:var(--ink)
+}
+.instructions{
+  max-width:780px;margin:0 auto 20px;text-align:left;
+  background:var(--paper);border:1px solid var(--border);border-radius:16px;padding:18px 22px
+}
+.instructions b{font-family:var(--font-hand);font-size:17px}
+.instructions li{margin:8px 0;font-size:14.5px}
+.name-row{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin:18px 0}
+input{
+  border:2px solid var(--border);border-radius:12px;padding:12px 14px;
+  font-size:15.5px;outline:none;background:var(--paper-2);color:var(--ink)
+}
+input:focus{border-color:var(--accent)}
+.primary,.secondary{
+  border:0;border-radius:12px;padding:13px 20px;font-weight:700;
+  cursor:pointer;font-size:15px;font-family:var(--font-body);
+}
+.primary{background:var(--accent);color:white;box-shadow:0 4px 0 rgba(0,0,0,.15)}
+.primary:hover{filter:brightness(1.08)}
+.primary:active{transform:translateY(2px);box-shadow:0 2px 0 rgba(0,0,0,.15)}
+.secondary{background:transparent;color:var(--ink);border:2px solid var(--border)}
+.secondary:hover{border-color:var(--accent)}
+.primary:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+.hidden{display:none!important}
+
+/* --- overall progress --- */
+.overall{margin:0 0 18px}
+.overall-row{display:flex;justify-content:space-between;font-size:12px;color:var(--ink-soft);margin-bottom:5px}
+.overall-track{height:8px;background:var(--border);border-radius:99px;overflow:hidden}
+.overall-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent-2));transition:width .3s}
+
+/* --- challenge --- */
+.challenge-head{
+  display:flex;justify-content:space-between;gap:14px;align-items:flex-start;
+  margin-bottom:16px;flex-wrap:wrap
+}
+.challenge-head h2{margin:0;color:var(--ink);font-size:24px}
+.badge-row{display:flex;gap:8px;align-items:center;margin-top:6px;flex-wrap:wrap}
+.badge{
+  border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:600;
+  background:var(--accent-2-bg);color:var(--accent-2);border:1px solid var(--accent-2);
+}
+.stars{font-size:14px;letter-spacing:2px}
+.function-box{
+  background:var(--accent-2-bg);border:2px solid var(--accent-2);border-left-width:6px;
+  padding:14px 18px;border-radius:12px;margin-bottom:18px;font-size:20px;
+  display:flex;align-items:center;gap:10px;flex-wrap:wrap
+}
+.function-box .fbox-label{font-family:var(--font-hand);font-size:14px;color:var(--ink-soft)}
+.progress{
+  height:9px;background:var(--border);border-radius:99px;overflow:hidden;margin:10px 0 18px
+}
+.progress > div{height:100%;background:var(--good);transition:width .25s}
+.layout{
+  display:grid;grid-template-columns:minmax(0,1.35fr) minmax(300px,.65fr);gap:18px
+}
+.process{
+  border:1px solid var(--border);border-radius:16px;padding:16px 16px 16px 20px;background:var(--paper-2);
+  border-left:5px solid var(--margin);position:relative;
+}
+.process h3,.bank h3{margin:0 0 12px;color:var(--ink);font-size:17px;font-family:var(--font-hand)}
+.process-tools{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.help-toggle{font-size:12px;color:var(--ink-soft);display:flex;align-items:center;gap:6px;cursor:pointer;user-select:none}
+.help-toggle input{width:15px;height:15px;padding:0}
+.step{
+  border:1px solid var(--border);border-radius:13px;padding:12px 14px;margin:10px 0;
+  background:var(--paper);min-height:78px
+}
+.step-head{display:flex;align-items:center;gap:9px;margin-bottom:8px}
+.step-num{
+  font-family:var(--font-hand);background:var(--ink);color:var(--paper);
+  border-radius:8px;padding:1px 9px;font-size:13px;font-weight:700
+}
+.step-label{
+  font-size:12.5px;font-weight:600;color:var(--ink-soft);
+}
+.math-line{
+  font-size:21px;min-height:50px;display:flex;align-items:center;
+  flex-wrap:wrap;gap:6px;line-height:1.8;overflow-x:auto;padding:2px 0
+}
+.math-line .math-inline{display:inline-flex;align-items:center;white-space:nowrap}
+.tile .math-inline{display:block;text-align:center;line-height:1.5}
+.blank .math-inline{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap}
+.step-help{
+  font-size:12.5px;color:var(--ink-soft);font-style:italic;margin-top:6px;
+  border-top:1px dashed var(--border);padding-top:6px;
+}
+.step-help.hidden{display:none!important}
+
+.blank{
+  min-width:125px;min-height:50px;border:2px dashed #8ea1c7;border-radius:9px;
+  background:var(--paper-2);display:inline-flex;align-items:center;justify-content:center;
+  padding:3px 10px;vertical-align:middle;transition:.15s
+}
+.blank.over{background:var(--accent-2-bg);border-color:var(--accent)}
+.blank.filled{border-style:solid;background:var(--good-bg);border-color:var(--good)}
+.blank.wrong{background:var(--bad-bg);border-color:var(--bad);animation:shake .3s}
+.blank.hint{box-shadow:0 0 0 4px var(--accent-2-bg);border-color:var(--accent-2);animation:pulse 1s infinite}
+.blank:not(.filled){cursor:pointer}
+body.has-selection .blank:not(.filled){border-color:var(--accent-2);animation:pulse 1.1s infinite}
+@keyframes shake{20%{transform:translateX(-6px)}40%{transform:translateX(6px)}60%{transform:translateX(-4px)}80%{transform:translateX(4px)}}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 3px var(--accent-2-bg)}50%{box-shadow:0 0 0 7px var(--accent-2-bg)}}
+@keyframes pop{0%{transform:scale(.85)}55%{transform:scale(1.07)}100%{transform:scale(1)}}
+.blank.filled{animation:pop .28s ease}
+
+.bank{
+  border:1px solid var(--border);border-radius:16px;padding:16px;background:var(--paper);
+  position:sticky;top:calc(92px + env(safe-area-inset-top,0px));height:max-content
+}
+.bank-note{font-size:12px;color:var(--ink-soft);margin-bottom:12px}
+.tiles{display:flex;flex-direction:column;gap:9px}
+.tile{
+  background:var(--paper-2);border:2px solid var(--border);border-radius:11px;padding:13px 12px;
+  cursor:grab;box-shadow:0 3px 8px rgba(20,40,80,.08);
+  font-size:16px;touch-action:none;user-select:none;color:var(--ink);
+}
+.tile:hover{border-color:var(--accent)}
+.tile.selected{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-2-bg);transform:translateY(-2px)}
+.tile.used{opacity:.22;cursor:default}
+.tile.dragging{position:fixed;z-index:1000;pointer-events:none;width:min(330px,80vw);box-shadow:0 15px 30px rgba(0,0,0,.22);transform:rotate(1.5deg)}
+.feedback{
+  min-height:44px;margin-top:14px;border-radius:12px;padding:11px 14px;font-size:14px;
+  display:flex;align-items:center;gap:8px;transition:background .15s
+}
+.feedback.good{background:var(--good-bg);color:var(--good);border:1px solid var(--good)}
+.feedback.bad{background:var(--bad-bg);color:var(--bad);border:1px solid var(--bad)}
+.feedback.info{background:var(--accent-2-bg);color:var(--ink);border:1px solid var(--accent-2)}
+.challenge-actions{display:flex;justify-content:space-between;gap:10px;margin-top:16px;flex-wrap:wrap}
+
+/* --- results --- */
+.result{text-align:center;padding:30px 20px}
+.result h2{font-size:30px;color:var(--ink);margin:8px}
+.result .medal{font-size:55px}
+.result .verdict{font-family:var(--font-hand);color:var(--accent-2);font-size:18px;margin:0}
+.score-big{font-size:42px;font-weight:800;color:var(--accent);margin:12px}
+.result-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;max-width:600px;margin:20px auto}
+.result-item{background:var(--paper);border:1px solid var(--border);border-radius:13px;padding:12px}
+.result-item b{font-size:22px;color:var(--ink);display:block;font-family:var(--font-body)}
+.review{
+  text-align:left;max-width:760px;margin:22px auto;background:var(--paper);
+  border:1px solid var(--border);border-radius:15px;padding:6px 18px
+}
+.review-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border);flex-wrap:wrap}
+.review-row:last-child{border-bottom:0}
+.review-row .rr-fn{font-size:15px}
+.review-title{font-family:var(--font-hand);font-size:17px;display:block;padding-top:12px}
+.footer{text-align:center;color:var(--ink-soft);font-size:11px;margin-top:18px}
+
+@media(max-width:850px){
+  .layout{grid-template-columns:1fr}
+  .bank{position:static}
+  .stats{width:100%;justify-content:center}
+  .topbar-inner{justify-content:center}
+  .math-line{font-size:17px}
+}
+@media(max-width:520px){
+  main{padding:12px 9px 30px}
+  .card{padding:15px}
+  .start-screen{padding:24px 12px}
+  .start-screen h2{font-size:24px}
+  .function-box{font-size:18px}
+  .blank{min-width:90px}
+  .tile{font-size:14px}
+  .math-line{font-size:17px}
+}
+</style>
+</head>
+<body>
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="mascot" id="mascot">∂</div>
+      <div class="title">
+        <h1>Reto: Derivada por Definición</h1>
+        <p>Arrastra el paso correcto y arma el procedimiento completo.</p>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><b id="challengeStat">0/6</b><span>retos</span></div>
+      <div class="stat"><b id="scoreStat">0</b><span>puntos</span></div>
+      <div class="stat streak"><b id="streakStat">0</b><span>racha</span></div>
+      <div class="stat"><b id="timerStat">00:00</b><span>tiempo</span></div>
+      <button class="iconbtn" id="muteBtn" onclick="toggleMute()" aria-label="Silenciar sonido" title="Silenciar sonido">🔊</button>
+    </div>
+  </div>
+</header>
+
+<main>
+<section id="startScreen" class="card start-screen">
+  <div style="font-size:46px">✏️📐</div>
+  <p class="kicker">Matemáticas · Cálculo diferencial</p>
+  <h2>¡Completa la derivada!</h2>
+  <p>Reconoce cada paso de la <b>derivada por definición</b> y arrástralo hasta la casilla correcta.</p>
+  <div class="formula">\(m_{tan}=f'(x)=\lim_{h\to0}\frac{f(x+h)-f(x)}{h}\)</div>
+  <div class="instructions">
+    <b>¿Cómo se juega?</b>
+    <ol>
+      <li>Completa <b>6 retos</b>: 3 funciones lineales y 3 cuadráticas, de fácil a difícil.</li>
+      <li>Toca una tarjeta para seleccionarla, desplázate si hace falta y toca la casilla donde va (o arrástrala directo si está cerca).</li>
+      <li>Hay tarjetas correctas y distractores parecidos: lee con calma antes de soltar.</li>
+      <li>Cada acierto suma puntos y racha; cada error resta puntos y reinicia la racha.</li>
+      <li>Si te atoras, usa <b>💡 Pista</b> para iluminar la siguiente casilla.</li>
+      <li>Debajo de cada paso hay una explicación breve de qué se hizo y por qué.</li>
+    </ol>
+    <p style="margin-bottom:0"><b>Tip:</b> sigue la receta: \(f(x+h)\) → desarrollo → sustitución → simplificación → factor común → cancelación de \(h\) → \(h=0\).</p>
+  </div>
+  <div class="name-row">
+    <input id="studentName" type="text" maxlength="40" placeholder="Nombre del alumno">
+    <input id="studentGroup" type="text" maxlength="20" placeholder="Grupo (opcional)">
+  </div>
+  <button class="primary" onclick="startGame()">🚀 Comenzar reto</button>
+</section>
+
+<section id="gameScreen" class="card hidden">
+  <div class="overall">
+    <div class="overall-row"><span>Progreso general</span><span id="overallLabel">0 pasos</span></div>
+    <div class="overall-track"><div class="overall-fill" id="overallFill" style="width:0%"></div></div>
+  </div>
+
+  <div class="challenge-head">
+    <div>
+      <h2 id="challengeTitle">Reto 1</h2>
+      <div class="badge-row">
+        <span id="difficulty" class="badge">LINEAL · MUY FÁCIL</span>
+        <span class="stars" id="starsLive" title="Estrellas de este reto">☆☆☆</span>
+      </div>
+    </div>
+    <div style="min-width:180px;flex:1;max-width:360px">
+      <div style="font-size:11px;color:var(--ink-soft);text-align:right">Progreso del reto</div>
+      <div class="progress"><div id="stepProgress" style="width:0%"></div></div>
+    </div>
+  </div>
+
+  <div class="function-box"><span class="fbox-label">Función a derivar:</span><span id="functionText" class="math-inline"></span></div>
+
+  <div class="layout">
+    <div class="process">
+      <div class="process-tools">
+        <h3>📋 Procedimiento</h3>
+        <label class="help-toggle"><input type="checkbox" id="helpToggle" checked onchange="toggleHelp()"> Mostrar explicaciones</label>
+      </div>
+      <div id="steps"></div>
+      <div id="feedback" class="feedback info">Arrastra una tarjeta a una casilla.</div>
+      <div class="challenge-actions">
+        <button class="secondary" onclick="resetCurrent()">↻ Reiniciar reto</button>
+        <button class="secondary" onclick="giveHint()">💡 Pista</button>
+        <button id="nextBtn" class="primary" onclick="nextChallenge()" disabled>Continuar →</button>
+      </div>
+    </div>
+
+    <aside class="bank">
+      <h3>🧩 Tarjetas disponibles</h3>
+      <div class="bank-note">👉 Toca una tarjeta, desplázate si hace falta y toca la casilla donde va. También puedes arrastrarla directo si está cerca.</div>
+      <div id="tiles" class="tiles"></div>
+    </aside>
+  </div>
+</section>
+
+<section id="resultScreen" class="card result hidden">
+  <div class="medal" id="resultMedal">🏆</div>
+  <h2>¡Reto terminado!</h2>
+  <p class="verdict" id="resultVerdict"></p>
+  <div id="resultName"></div>
+  <div class="score-big" id="finalScore">0 puntos</div>
+  <div class="result-grid">
+    <div class="result-item"><b id="correctCount">0</b>correctos</div>
+    <div class="result-item"><b id="errorCount">0</b>errores</div>
+    <div class="result-item"><b id="finalTime">00:00</b>tiempo</div>
+  </div>
+  <div class="review" id="review"></div>
+  <button class="primary" onclick="location.reload()">🔄 Jugar otra vez</button>
+</section>
+
+<div class="footer">Actividad de práctica · Derivada por definición · \(m_{tan}=f'(x)\)</div>
+</main>
+
+<script>
+const challenges = [
+{
+  type:"LINEAL", level:"MUY FÁCIL",levelColor:"#2f8f5f", fn:"f(x)=3x+2",
+  final:"3",
+  steps:[
+    {label:"Calcula f(x+h)", parts:["f(x+h)=",{blank:"3(x+h)+2"}]},
+    {label:"Desarrolla", parts:["f(x+h)=",{blank:"3x+3h+2"}]},
+    {label:"Sustituye en la definición", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{3x+3h+2-(3x+2)}{h}"}]},
+    {label:"Distribuye el signo negativo", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{3x+3h+2-3x-2}{h}"}]},
+    {label:"Simplifica", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{3h}{h}"}]},
+    {label:"Factor común", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{h(3)}{h}"}]},
+    {label:"Cancela h", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"3"}]},
+    {label:"Resultado", parts:["m_{tan}=f'(x)=",{blank:"3"}]}
+  ],
+  distractors:["3x+h+2","3x+3h-2","\\frac{3x+3h+2+(3x+2)}{h}","\\frac{3x+3h+2+3x+2}{h}","\\frac{3h+2}{h}","\\frac{h(3x+2)}{h}","3h","3x+2"]
+},
+{
+  type:"LINEAL", level:"FÁCIL",levelColor:"#2f7fb0", fn:"f(x)=-4x+7",
+  final:"-4",
+  steps:[
+    {label:"Calcula f(x+h)", parts:["f(x+h)=",{blank:"-4(x+h)+7"}]},
+    {label:"Desarrolla", parts:["f(x+h)=",{blank:"-4x-4h+7"}]},
+    {label:"Sustituye en la definición", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{-4x-4h+7-(-4x+7)}{h}"}]},
+    {label:"Distribuye el signo negativo", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{-4x-4h+7+4x-7}{h}"}]},
+    {label:"Simplifica", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{-4h}{h}"}]},
+    {label:"Factor común", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{h(-4)}{h}"}]},
+    {label:"Cancela h", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"-4"}]},
+    {label:"Resultado", parts:["m_{tan}=f'(x)=",{blank:"-4"}]}
+  ],
+  distractors:["-4x+h+7","-4x-4h-7","\\frac{-4x-4h+7+(-4x+7)}{h}","\\frac{-4x-4h+7+4x+7}{h}","\\frac{-4h+7}{h}","\\frac{h(-4x)}{h}","4","-4h"]
+},
+{
+  type:"LINEAL", level:"MEDIO",levelColor:"#e69500", fn:"f(x)=5x-6",
+  final:"5",
+  steps:[
+    {label:"Calcula f(x+h)", parts:["f(x+h)=",{blank:"5(x+h)-6"}]},
+    {label:"Desarrolla", parts:["f(x+h)=",{blank:"5x+5h-6"}]},
+    {label:"Sustituye en la definición", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{5x+5h-6-(5x-6)}{h}"}]},
+    {label:"Distribuye el signo negativo", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{5x+5h-6-5x+6}{h}"}]},
+    {label:"Simplifica", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{5h}{h}"}]},
+    {label:"Factor común", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{h(5)}{h}"}]},
+    {label:"Cancela h", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"5"}]},
+    {label:"Resultado", parts:["m_{tan}=f'(x)=",{blank:"5"}]}
+  ],
+  distractors:["5x+h-6","5x+5h+6","\\frac{5x+5h-6+(5x-6)}{h}","\\frac{5x+5h-6-5x-6}{h}","\\frac{5h-6}{h}","\\frac{h(5x)}{h}","-5","5h"]
+},
+{
+  type:"CUADRÁTICA", level:"MEDIO",levelColor:"#e69500", fn:"f(x)=x^2+3x-2",
+  final:"2x+3",
+  steps:[
+    {label:"Calcula f(x+h)", parts:["f(x+h)=",{blank:"(x+h)^2+3(x+h)-2"}]},
+    {label:"Desarrolla", parts:["f(x+h)=",{blank:"x^2+2xh+h^2+3x+3h-2"}]},
+    {label:"Sustituye en la definición", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{x^2+2xh+h^2+3x+3h-2-(x^2+3x-2)}{h}"}]},
+    {label:"Distribuye el signo negativo", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{x^2+2xh+h^2+3x+3h-2-x^2-3x+2}{h}"}]},
+    {label:"Simplifica", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{2xh+h^2+3h}{h}"}]},
+    {label:"Factor común h", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{h(2x+h+3)}{h}"}]},
+    {label:"Cancela h", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"2x+h+3"}]},
+    {label:"Aplica h=0 y concluye", parts:["m_{tan}=f'(x)=",{blank:"2x+3"}]}
+  ],
+  distractors:["x^2+2xh+h^2+3x-3h-2","x^2+2xh+h^2+3x+3h+2","\\frac{x^2+2xh+h^2+3x+3h-2+(x^2+3x-2)}{h}","\\frac{x^2+2xh+h^2+3x+3h-2-x^2-3x-2}{h}","\\frac{2xh+h^2+3}{h}","\\frac{h(2x+h-3)}{h}","2x+h-3","2x-3"]
+},
+{
+  type:"CUADRÁTICA", level:"DIFÍCIL",levelColor:"#c9424a", fn:"f(x)=2x^2-5x+1",
+  final:"4x-5",
+  steps:[
+    {label:"Calcula f(x+h)", parts:["f(x+h)=",{blank:"2(x+h)^2-5(x+h)+1"}]},
+    {label:"Desarrolla", parts:["f(x+h)=",{blank:"2x^2+4xh+2h^2-5x-5h+1"}]},
+    {label:"Sustituye en la definición", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{2x^2+4xh+2h^2-5x-5h+1-(2x^2-5x+1)}{h}"}]},
+    {label:"Distribuye el signo negativo", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{2x^2+4xh+2h^2-5x-5h+1-2x^2+5x-1}{h}"}]},
+    {label:"Simplifica", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{4xh+2h^2-5h}{h}"}]},
+    {label:"Factor común h", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{h(4x+2h-5)}{h}"}]},
+    {label:"Cancela h", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"4x+2h-5"}]},
+    {label:"Aplica h=0 y concluye", parts:["m_{tan}=f'(x)=",{blank:"4x-5"}]}
+  ],
+  distractors:["2x^2+4xh+2h^2-5x+5h+1","2x^2+4xh+2h^2+5x+5h+1","\\frac{2x^2+4xh+2h^2-5x-5h+1+(2x^2-5x+1)}{h}","\\frac{2x^2+4xh+2h^2-5x-5h+1-2x^2+5x+1}{h}","\\frac{4xh+2h^2-5}{h}","\\frac{h(4x+2h+5)}{h}","4x+2h+5","-4x-5"]
+},
+{
+  type:"CUADRÁTICA", level:"RETO",levelColor:"#8e3fc9", fn:"f(x)=-3x^2+4x+6",
+  final:"-6x+4",
+  steps:[
+    {label:"Calcula f(x+h)", parts:["f(x+h)=",{blank:"-3(x+h)^2+4(x+h)+6"}]},
+    {label:"Desarrolla", parts:["f(x+h)=",{blank:"-3x^2-6xh-3h^2+4x+4h+6"}]},
+    {label:"Sustituye en la definición", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{-3x^2-6xh-3h^2+4x+4h+6-(-3x^2+4x+6)}{h}"}]},
+    {label:"Distribuye el signo negativo", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{-3x^2-6xh-3h^2+4x+4h+6+3x^2-4x-6}{h}"}]},
+    {label:"Simplifica", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{-6xh-3h^2+4h}{h}"}]},
+    {label:"Factor común h", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"\\frac{h(-6x-3h+4)}{h}"}]},
+    {label:"Cancela h", parts:["m_{tan}=f'(x)=\\lim_{h\\to0}",{blank:"-6x-3h+4"}]},
+    {label:"Aplica h=0 y concluye", parts:["m_{tan}=f'(x)=",{blank:"-6x+4"}]}
+  ],
+  distractors:["-3x^2-6xh-3h^2+4x-4h+6","-3x^2-6xh-3h^2-4x-4h+6","\\frac{-3x^2-6xh-3h^2+4x+4h+6+(-3x^2+4x+6)}{h}","\\frac{-3x^2-6xh-3h^2+4x+4h+6+3x^2-4x+6}{h}","\\frac{-6xh-3h^2+4}{h}","\\frac{h(-6x-3h-4)}{h}","-6x-3h-4","6x+4"]
+}
+];
+
+const STEP_HELP = [
+  "Sustituye x por (x+h) en la función original: así defines f(x+h).",
+  "Desarrolla los productos y las potencias para dejar la expresión simplificada.",
+  "Coloca f(x+h) y f(x) en la fórmula del límite: la pendiente de la recta secante.",
+  "Distribuye el signo negativo en cada término de f(x); todavía no combines nada, solo abre el paréntesis.",
+  "Combina los términos semejantes: los que no llevan h se cancelan y solo quedan los que sí llevan h.",
+  "Factoriza h en todo el numerador para poder cancelarlo con el h del denominador.",
+  "Cancela el factor h: numerador y denominador se dividen entre h.",
+  "Aplica el límite haciendo h→0 en lo que queda: el resultado es f'(x)."
+];
+
+const TOTAL_STEPS = challenges.reduce((a,c)=>a+c.steps.length,0);
+
+let current=0, score=0, errors=0, correct=0, started=false, startTime=0, timerHandle=null;
+let usedTiles = new Set();
+let filled = {};
+let dragged = null;
+let touchOffsetX=0,touchOffsetY=0;
+let streak=0, totalDone=0, errorsThisChallenge=0, muted=false;
+let challengeResults = [];
+
+try{ muted = localStorage.getItem('derivGameMuted')==='1'; }catch(e){}
+updateMuteBtn();
+
+function esc(s){
+  return s.replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+}
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}
+  return a;
+}
+
+/* ---------------- sound ---------------- */
+let audioCtx=null;
+function tone(freq,dur,delay=0,type='sine',vol=0.09){
+  if(muted) return;
+  try{
+    audioCtx = audioCtx || new (window.AudioContext||window.webkitAudioContext)();
+    const t0=audioCtx.currentTime+delay;
+    const osc=audioCtx.createOscillator();
+    const gain=audioCtx.createGain();
+    osc.type=type;osc.frequency.setValueAtTime(freq,t0);
+    gain.gain.setValueAtTime(0,t0);
+    gain.gain.linearRampToValueAtTime(vol,t0+0.01);
+    gain.gain.exponentialRampToValueAtTime(0.001,t0+dur);
+    osc.connect(gain).connect(audioCtx.destination);
+    osc.start(t0);osc.stop(t0+dur+0.02);
+  }catch(e){}
+}
+function playCorrect(){tone(523,.12,0,'triangle');tone(784,.16,.09,'triangle')}
+function playWrong(){tone(180,.22,0,'sawtooth',.06)}
+function playWin(){tone(523,.12,0,'triangle');tone(659,.12,.1,'triangle');tone(784,.12,.2,'triangle');tone(1046,.25,.32,'triangle')}
+function toggleMute(){
+  muted=!muted;
+  try{ localStorage.setItem('derivGameMuted', muted?'1':'0'); }catch(e){}
+  updateMuteBtn();
+}
+function updateMuteBtn(){
+  const b=document.getElementById('muteBtn');
+  if(b) b.textContent = muted?'🔇':'🔊';
+}
+
+/* ---------------- confetti ---------------- */
+function confetti(n=28){
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const colors=['#2f5fb0','#e69500','#2f8f5f','#c9424a','#8e3fc9'];
+  const layer=document.createElement('div');
+  layer.style.cssText='position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:999';
+  for(let i=0;i<n;i++){
+    const p=document.createElement('div');
+    const size=6+Math.random()*6;
+    p.style.cssText=`position:absolute;top:-20px;left:${Math.random()*100}%;width:${size}px;height:${size*0.6}px;
+      background:${colors[i%colors.length]};opacity:.9;border-radius:2px;
+      animation:confettiFall ${1.1+Math.random()*.9}s cubic-bezier(.3,.6,.7,1) forwards;
+      transform:rotate(${Math.random()*360}deg)`;
+    layer.appendChild(p);
+  }
+  document.body.appendChild(layer);
+  setTimeout(()=>layer.remove(),2200);
+}
+if(!document.getElementById('confettiKeyframes')){
+  const st=document.createElement('style');
+  st.id='confettiKeyframes';
+  st.textContent=`@keyframes confettiFall{to{transform:translateY(105vh) rotate(540deg);opacity:.15}}`;
+  document.head.appendChild(st);
+}
+
+/* ---------------- mascot ---------------- */
+function bumpMascot(face){
+  const m=document.getElementById('mascot');
+  m.textContent=face;
+  m.classList.remove('bump');void m.offsetWidth;m.classList.add('bump');
+  clearTimeout(bumpMascot._t);
+  bumpMascot._t=setTimeout(()=>{m.textContent='∂'},1400);
+}
+
+/* ---------------- game flow ---------------- */
+function startGame(){
+  const name=document.getElementById('studentName').value.trim();
+  if(!name){document.getElementById('studentName').focus();return;}
+  document.getElementById('startScreen').classList.add('hidden');
+  document.getElementById('gameScreen').classList.remove('hidden');
+  started=true;startTime=Date.now();
+  timerHandle=setInterval(updateTimer,250);
+  renderChallenge();
+}
+function updateTimer(){
+  if(!started)return;
+  const sec=Math.floor((Date.now()-startTime)/1000);
+  document.getElementById('timerStat').textContent=formatTime(sec);
+}
+function formatTime(sec){
+  const m=String(Math.floor(sec/60)).padStart(2,'0');
+  const s=String(sec%60).padStart(2,'0');
+  return `${m}:${s}`;
+}
+function renderChallenge(){
+  const c=challenges[current];
+  usedTiles=new Set();filled={};errorsThisChallenge=0;deselectTile();
+  document.getElementById('challengeTitle').textContent=`Reto ${current+1} de ${challenges.length}`;
+  const diff=document.getElementById('difficulty');
+  diff.textContent=`${c.type} · ${c.level}`;
+  diff.style.background='transparent';
+  diff.style.color=c.levelColor;
+  diff.style.borderColor=c.levelColor;
+  document.getElementById('starsLive').textContent='☆☆☆';
+  document.getElementById('functionText').innerHTML=math(c.fn);
+  document.getElementById('challengeStat').textContent=`${current+1}/${challenges.length}`;
+  document.getElementById('nextBtn').disabled=true;
+  setFeedback('Arrastra una tarjeta a cada casilla. ¡Tú puedes! 💪','info');
+  renderSteps(c);
+  renderTiles(c);
+  updateOverall();
+  typeset();
+}
+function math(latex){
+  return `\\(${latex}\\)`;
+}
+function renderSteps(c){
+  const container=document.getElementById('steps');
+  container.innerHTML='';
+  const showHelp = document.getElementById('helpToggle').checked;
+  c.steps.forEach((step,i)=>{
+    let html='';
+    step.parts.forEach(part=>{
+      if(typeof part==='string'){
+        html+=`<span class="math-inline">${math(part)}</span>`;
+      }else{
+        html+=`<span class="blank" data-step="${i}" data-answer="${esc(part.blank)}" aria-label="Casilla vacía, paso ${i+1}"><span class="math-inline">?</span></span>`;
+      }
+    });
+    container.innerHTML+=`<div class="step" data-step-card="${i}">
+      <div class="step-head"><span class="step-num">Paso ${i+1}</span><span class="step-label">${esc(step.label)}</span></div>
+      <div class="math-line">${html}</div>
+      <div class="step-help ${showHelp?'':'hidden'}">${STEP_HELP[i]||''}</div>
+    </div>`;
+  });
+  document.querySelectorAll('.blank').forEach(el=>{
+    el.addEventListener('click',()=>handleBlankClick(el));
+  });
+}
+function toggleHelp(){
+  const show=document.getElementById('helpToggle').checked;
+  document.querySelectorAll('.step-help').forEach(el=>el.classList.toggle('hidden',!show));
+}
+function renderTiles(c){
+  const bank=document.getElementById('tiles');bank.innerHTML='';
+  let cards=[];
+  c.steps.forEach((s,i)=>cards.push({
+    id:`c${current}-s${i}`,
+    text:s.parts.find(p=>typeof p==='object').blank,
+    step:i,
+    correct:true
+  }));
+  c.distractors.forEach((text,i)=>cards.push({
+    id:`c${current}-d${i}`,text,step:null,correct:false
+  }));
+  shuffle(cards);
+  cards.forEach(card=>{
+    const div=document.createElement('div');
+    div.className='tile';
+    div.dataset.id=card.id;
+    div.dataset.step=card.step===null?'':card.step;
+    div.dataset.correct=card.correct?'1':'0';
+    div.innerHTML=`<span class="math-inline">${math(card.text)}</span>`;
+    div.addEventListener('pointerdown',beginDrag);
+    bank.appendChild(div);
+  });
+}
+
+/* ---- selección con toque: toca la tarjeta, desplázate si hace falta, toca la casilla ---- */
+let selectedTile=null;
+function selectTile(tile){
+  if(tile.classList.contains('used'))return;
+  if(selectedTile===tile){deselectTile();return;}
+  document.querySelectorAll('.tile.selected').forEach(t=>t.classList.remove('selected'));
+  selectedTile=tile;
+  tile.classList.add('selected');
+  document.body.classList.add('has-selection');
+  setFeedback('📍 Tarjeta seleccionada: desplázate si hace falta y toca la casilla donde va.','info');
+}
+function deselectTile(){
+  if(selectedTile) selectedTile.classList.remove('selected');
+  selectedTile=null;
+  document.body.classList.remove('has-selection');
+}
+function handleBlankClick(el){
+  if(el.classList.contains('filled'))return;
+  if(!selectedTile){
+    setFeedback('Primero toca una tarjeta del panel y luego toca esta casilla (o arrástrala directo).','info');
+    return;
+  }
+  const tile=selectedTile;
+  deselectTile();
+  placeTile(tile,el);
+}
+
+/* ---- arrastre con el puntero, con auto-scroll cerca de los bordes ---- */
+let autoScrollTimer=null;
+function autoScrollCheck(y){
+  const edge=90, vh=window.innerHeight;
+  if(y<edge) startAutoScroll(-16);
+  else if(y>vh-edge) startAutoScroll(16);
+  else stopAutoScroll();
+}
+function startAutoScroll(delta){
+  if(autoScrollTimer)return;
+  autoScrollTimer=setInterval(()=>window.scrollBy(0,delta),16);
+}
+function stopAutoScroll(){
+  if(autoScrollTimer){clearInterval(autoScrollTimer);autoScrollTimer=null;}
+}
+function beginDrag(e){
+  if(this.classList.contains('used'))return;
+  const tile=this;
+  const startX=e.clientX,startY=e.clientY;
+  let isDragging=false;
+  const r=tile.getBoundingClientRect();
+  const offX=e.clientX-r.left,offY=e.clientY-r.top;
+  tile.setPointerCapture?.(e.pointerId);
+  const move=(ev)=>{
+    if(!isDragging && Math.hypot(ev.clientX-startX,ev.clientY-startY)>8){
+      isDragging=true;
+      dragged=tile;
+      tile.classList.add('dragging');
+      deselectTile();
+    }
+    if(isDragging){
+      tile.style.left=(ev.clientX-offX)+'px';
+      tile.style.top=(ev.clientY-offY)+'px';
+      autoScrollCheck(ev.clientY);
+    }
+  };
+  const up=(ev)=>{
+    document.removeEventListener('pointermove',move);
+    document.removeEventListener('pointerup',up);
+    stopAutoScroll();
+    if(isDragging){
+      tile.classList.remove('dragging');
+      tile.style.left='';tile.style.top='';
+      const under=document.elementFromPoint(ev.clientX,ev.clientY);
+      const target=under?.closest?.('.blank');
+      if(target) placeTile(tile,target);
+      dragged=null;
+    }else{
+      selectTile(tile);
+    }
+  };
+  document.addEventListener('pointermove',move);
+  document.addEventListener('pointerup',up,{once:true});
+}
+function placeTile(tile,target){
+  if(target.classList.contains('filled'))return;
+  const step=Number(target.dataset.step);
+  const correctStep=tile.dataset.step===''?null:Number(tile.dataset.step);
+  if(correctStep===step){
+    target.innerHTML=tile.innerHTML;
+    target.classList.remove('filled');void target.offsetWidth;
+    target.classList.add('filled');
+    tile.classList.add('used');
+    tile.dataset.used='1';
+    usedTiles.add(tile.dataset.id);
+    filled[step]=true;
+    correct++;
+    streak++;
+    totalDone++;
+    const bonus=Math.min(streak*5,40);
+    score+=100+bonus;
+    playCorrect();
+    bumpMascot(streak>=5?'🔥':streak>=3?'😎':'🤩');
+    setFeedback(streak>=3?`✅ ¡Correcto! Racha de ${streak} 🔥 (+${100+bonus} pts)`:'✅ ¡Correcto! Ese es el paso que corresponde.','good');
+    updateStats();
+    updateOverall();
+    typeset();
+    updateProgress();
+    if(Object.keys(filled).length===challenges[current].steps.length){
+      score+=50;
+      document.getElementById('nextBtn').disabled=false;
+      const stars=starsFor(errorsThisChallenge);
+      document.getElementById('starsLive').textContent='★'.repeat(stars)+'☆'.repeat(3-stars);
+      challengeResults[current]={stars,errors:errorsThisChallenge};
+      setFeedback('🎉 ¡Procedimiento completo! Puedes continuar al siguiente reto.','good');
+      updateStats();
+      confetti(stars>=3?36:22);
+      playWin();
+      bumpMascot('🎉');
+    }
+  }else{
+    errors++;
+    errorsThisChallenge++;
+    streak=0;
+    score=Math.max(0,score-25);
+    target.classList.add('wrong');
+    setTimeout(()=>target.classList.remove('wrong'),350);
+    playWrong();
+    bumpMascot('😅');
+    setFeedback('❌ Ese paso no corresponde aquí. Revisa en qué parte del procedimiento estás.','bad');
+    updateStats();
+  }
+}
+function starsFor(errs){
+  if(errs===0) return 3;
+  if(errs<=2) return 2;
+  return 1;
+}
+function giveHint(){
+  const c=challenges[current];
+  for(let i=0;i<c.steps.length;i++){
+    if(!filled[i]){
+      const blank=document.querySelector(`.blank[data-step="${i}"]`);
+      if(blank){
+        blank.classList.add('hint');
+        blank.scrollIntoView({behavior:'smooth',block:'center'});
+        setFeedback('💡 '+(STEP_HELP[i]||'Busca la tarjeta que corresponde a este paso.'),'info');
+        setTimeout(()=>blank.classList.remove('hint'),2400);
+      }
+      return;
+    }
+  }
+}
+function updateProgress(){
+  const n=challenges[current].steps.length;
+  document.getElementById('stepProgress').style.width=(Object.keys(filled).length/n*100)+'%';
+}
+function updateOverall(){
+  document.getElementById('overallLabel').textContent=`${totalDone} / ${TOTAL_STEPS} pasos`;
+  document.getElementById('overallFill').style.width=(totalDone/TOTAL_STEPS*100)+'%';
+}
+function setFeedback(text,type){
+  const f=document.getElementById('feedback');
+  f.className='feedback '+type;f.textContent=text;
+}
+function updateStats(){
+  document.getElementById('scoreStat').textContent=score;
+  document.getElementById('streakStat').textContent=streak;
+}
+function resetCurrent(){
+  totalDone-=Object.keys(filled).length;
+  challengeResults[current]=undefined;
+  renderChallenge();
+}
+function nextChallenge(){
+  if(current<challenges.length-1){
+    current++;
+    renderChallenge();
+  }else{
+    finishGame();
+  }
+}
+function finishGame(){
+  started=false;clearInterval(timerHandle);
+  const sec=Math.floor((Date.now()-startTime)/1000);
+  document.getElementById('gameScreen').classList.add('hidden');
+  document.getElementById('resultScreen').classList.remove('hidden');
+  document.getElementById('resultName').innerHTML=`<b>${esc(document.getElementById('studentName').value.trim())}</b>${document.getElementById('studentGroup').value.trim()?` · Grupo ${esc(document.getElementById('studentGroup').value.trim())}`:''}`;
+  document.getElementById('finalScore').textContent=`${score} puntos`;
+  document.getElementById('correctCount').textContent=correct;
+  document.getElementById('errorCount').textContent=errors;
+  document.getElementById('finalTime').textContent=formatTime(sec);
+
+  const totalStars=challengeResults.reduce((a,r)=>a+(r?r.stars:0),0);
+  const maxStars=challenges.length*3;
+  document.getElementById('resultMedal').textContent = totalStars>=maxStars-1?'🏆':totalStars>=maxStars*0.66?'🥈':'🥉';
+  document.getElementById('resultVerdict').textContent =
+    totalStars>=maxStars-1 ? '¡Dominas la derivada por definición!' :
+    totalStars>=maxStars*0.66 ? '¡Muy buen trabajo, ya casi la dominas!' :
+    'Buen intento, sigue practicando el procedimiento.';
+
+  const review=document.getElementById('review');
+  review.innerHTML='<span class="review-title">Resultados por reto</span>';
+  challenges.forEach((c,i)=>{
+    const r=challengeResults[i]||{stars:0};
+    review.innerHTML+=`<div class="review-row">
+      <span class="rr-fn">Reto ${i+1} · ${c.type.toLowerCase()} · \\(${c.fn}\\) → \\(f'(x)=${c.final}\\)</span>
+      <span class="stars">${'★'.repeat(r.stars)}${'☆'.repeat(3-r.stars)}</span>
+    </div>`;
+  });
+  confetti(40);
+  typeset();
+}
+function typeset(){
+  if(window.MathJax?.typesetPromise){
+    MathJax.typesetPromise().catch(()=>{});
+  }
+}
+window.addEventListener('load',()=>typeset());
+</script>
+</body>
+</html>
