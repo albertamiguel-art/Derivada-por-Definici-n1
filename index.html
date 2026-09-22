@@ -692,6 +692,7 @@ function renderTiles(c){
     div.dataset.id=card.id;
     div.dataset.step=card.step===null?'':card.step;
     div.dataset.correct=card.correct?'1':'0';
+    div.dataset.value=card.text;
     div.innerHTML=`<span class="math-inline">${math(card.text)}</span>`;
     div.addEventListener('pointerdown',beginDrag);
     bank.appendChild(div);
@@ -782,8 +783,8 @@ function beginDrag(e){
 function placeTile(tile,target){
   if(target.classList.contains('filled'))return;
   const step=Number(target.dataset.step);
-  const correctStep=tile.dataset.step===''?null:Number(tile.dataset.step);
-  if(correctStep===step){
+  const isCorrect = tile.dataset.correct==='1' && tile.dataset.value===target.dataset.answer;
+  if(isCorrect){
     target.innerHTML=tile.innerHTML;
     target.classList.remove('filled');void target.offsetWidth;
     target.classList.add('filled');
